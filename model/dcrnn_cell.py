@@ -182,7 +182,6 @@ class DCIndCell(DCGRUCell):
     def __init__(self, num_units, adj_mx, max_diffusion_step, num_nodes, input_size=None, num_proj=None,
                  activation=tf.nn.relu, reuse=None, filter_type="laplacian"):
         """
-
         :param num_units:
         :param adj_mx:
         :param max_diffusion_step:
@@ -195,24 +194,15 @@ class DCIndCell(DCGRUCell):
         """
         super(DCGRUCell, self).__init__(num_units, adj_mx, max_diffusion_step, num_nodes,
              input_size, num_proj, activation, reuse, filter_type)
+        
+        self._input_kernel = self.add_variable("input_kernel",
+                                               shape=[input_size, self._num_units],
+                                               initializer=self._input_initializer)
+        
+        self._recurrent_kernel = self.add_variable("recurrent_kernel",
+                                                   shape=[self._num_units],
+                                                   initializer=self._recurrent_initializer)
 
-#    @staticmethod
-#    def _build_sparse_matrix(L):
-#        L = L.tocoo()
-#        indices = np.column_stack((L.row, L.col))
-#        L = tf.SparseTensor(indices, L.data, L.shape)
-#        return tf.sparse_reorder(L)
-#
-#    @property
-#    def state_size(self):
-#        return self._num_nodes * self._num_units
-#
-#    @property
-#    def output_size(self):
-#        output_size = self._num_nodes * self._num_units
-#        if self._num_proj is not None:
-#            output_size = self._num_nodes * self._num_proj
-#        return output_size
 
     def __call__(self, inputs, state, scope=None):
         pass
@@ -225,23 +215,19 @@ class DCIndCell(DCGRUCell):
             the arity and shapes of `state`
         """
         with tf.variable_scope(scope or "dcgru_cell"):
-            with tf.variable_scope("gates"):  # Reset gate and update gate.
-                # We start with bias of 1.0 to not reset and not update.
-                r = self._gconv(inputs, state, self._num_units, bias_start=1.0, scope=scope)
-#                r, u = tf.split(value=value, num_or_size_splits=2, axis=1)
-                # r, u = sigmoid(r), sigmoid(u)
-            with tf.variable_scope("candidate"):
-                c = inputs * state
-                if self._activation is not None:
-                    c = self._activation(c)
-            output = new_state = u * state + (1 - u) * c
+            gate_inputs = self._gconv(inputs, state, self._num_units, bias_start=1.0, scope=scope)
+            recurrent_update = state * self._recurrent_kernel
+            gate_inputs = gate_inputs + recurrent_update
+            gate_inputs = gate_inputs + self._bias
+            output = new_state = self._activation(gate_inputs)
+
             if self._num_proj is not None:
                 with tf.variable_scope("projection"):
                     w = tf.get_variable('w', shape=(self._num_units, self._num_proj))
                     batch_size = inputs.get_shape()[0].value
                     output = tf.reshape(new_state, shape=(-1, self._num_units))
                     output = tf.reshape(tf.matmul(output, w), shape=(batch_size, self.output_size))
-        return output, new_state
+        return output, output
 
 #    @staticmethod
 #    def _concat(x, x_):

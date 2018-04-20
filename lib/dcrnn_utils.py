@@ -7,7 +7,7 @@ from lib.tf_utils import sparse_matrix_to_tf_sparse_tensor
 
 
 def load_graph_data(pkl_filename):
-    with open(pkl_filename) as f:
+    with open(pkl_filename,'rb') as f:
         sensor_ids, sensor_id_to_ind, adj_mx = pickle.load(f)
     return sensor_ids, sensor_id_to_ind, adj_mx
 

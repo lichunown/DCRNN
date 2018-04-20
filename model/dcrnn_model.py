@@ -7,7 +7,7 @@ import tensorflow as tf
 from tensorflow.contrib import legacy_seq2seq
 
 from lib.metrics import masked_mse_loss, masked_mae_loss, masked_rmse_loss
-from model.dcrnn_cell import DCGRUCell
+from model.dcrnn_cell import DCGRUCell,DCIndCell
 from model.tf_model import TFModel
 
 
@@ -36,9 +36,9 @@ class DCRNNModel(TFModel):
         self._labels = tf.placeholder(tf.float32, shape=(batch_size, horizon, num_nodes, output_dim), name='labels')
         GO_SYMBOL = tf.zeros(shape=(batch_size, num_nodes * input_dim))
 
-        cell = DCGRUCell(rnn_units, adj_mx, max_diffusion_step=max_diffusion_step, num_nodes=num_nodes,
+        cell = DCIndCell(rnn_units, adj_mx, max_diffusion_step=max_diffusion_step, num_nodes=num_nodes,
                          filter_type=filter_type)
-        cell_with_projection = DCGRUCell(rnn_units, adj_mx, max_diffusion_step=max_diffusion_step, num_nodes=num_nodes,
+        cell_with_projection = DCIndCell(rnn_units, adj_mx, max_diffusion_step=max_diffusion_step, num_nodes=num_nodes,
                                          num_proj=output_dim, filter_type=filter_type)
         encoding_cells = [cell] * num_rnn_layers
         decoding_cells = [cell] * (num_rnn_layers - 1) + [cell_with_projection]
