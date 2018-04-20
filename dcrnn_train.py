@@ -76,6 +76,7 @@ def main():
         if FLAGS.use_cpu_only:
             tf_config = tf.ConfigProto(device_count={'GPU': 0})
         tf_config.gpu_options.allow_growth = True
+        print('STRAT train!!!!!!!!!!!!!')
         with tf.Session(config=tf_config) as sess:
             supervisor = DCRNNSupervisor(traffic_reading_df=traffic_reading_df, adj_mx=adj_mx,
                                          config=supervisor_config)
