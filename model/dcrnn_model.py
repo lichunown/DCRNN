@@ -36,12 +36,24 @@ class DCRNNModel(TFModel):
         self._labels = tf.placeholder(tf.float32, shape=(batch_size, horizon, num_nodes, output_dim), name='labels')
         GO_SYMBOL = tf.zeros(shape=(batch_size, num_nodes * input_dim))
 
-        cell = DCIndCell(rnn_units, adj_mx, max_diffusion_step=max_diffusion_step, num_nodes=num_nodes,
-                         filter_type=filter_type)
-        cell_with_projection = DCIndCell(rnn_units, adj_mx, max_diffusion_step=max_diffusion_step, num_nodes=num_nodes,
-                                         num_proj=output_dim, filter_type=filter_type)
-        encoding_cells = [cell] * num_rnn_layers
-        decoding_cells = [cell] * (num_rnn_layers - 1) + [cell_with_projection]
+#        cell = DCIndCell(rnn_units, adj_mx, max_diffusion_step=max_diffusion_step, num_nodes=num_nodes,
+#                         filter_type=filter_type)
+#        cell_with_projection = DCIndCell(rnn_units, adj_mx, max_diffusion_step=max_diffusion_step, num_nodes=num_nodes,
+#                                         num_proj=output_dim, filter_type=filter_type)
+#        encoding_cells = [cell] * num_rnn_layers
+#        decoding_cells = [cell] * (num_rnn_layers - 1) + [cell_with_projection]
+        
+        encoding_cells = []
+        for i in range(num_rnn_layers):
+            encoding_cells.append(DCIndCell(rnn_units, adj_mx, max_diffusion_step=max_diffusion_step, num_nodes=num_nodes,
+                         filter_type=filter_type))
+        decoding_cells = []
+        for i in range(num_rnn_layers - 1):
+            decoding_cells.append(DCIndCell(rnn_units, adj_mx, max_diffusion_step=max_diffusion_step, num_nodes=num_nodes,
+                         filter_type=filter_type))
+        decoding_cells.append(DCIndCell(rnn_units, adj_mx, max_diffusion_step=max_diffusion_step, num_nodes=num_nodes,
+                                         num_proj=output_dim, filter_type=filter_type))
+        
         encoding_cells = tf.contrib.rnn.MultiRNNCell(encoding_cells, state_is_tuple=True)
         decoding_cells = tf.contrib.rnn.MultiRNNCell(decoding_cells, state_is_tuple=True)
 
