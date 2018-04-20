@@ -206,8 +206,8 @@ class TFModelSupervisor(object):
         config_filename = TFModelSupervisor._get_config_filename(self._epoch)
         config = dict(self._config)
         global_step = sess.run(tf.train.get_or_create_global_step())
-        config['epoch'] = self._epoch
-        config['global_step'] = global_step
+        config['epoch'] = int(self._epoch)
+        config['global_step'] = int(global_step)
         config['log_dir'] = self._log_dir
         config['model_filename'] = saver.save(sess, os.path.join(self._log_dir, 'models-%.4f' % val_loss),
                                               global_step=global_step, write_meta_graph=False)
