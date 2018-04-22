@@ -13,6 +13,7 @@ from lib import dcrnn_utils
 from tensorflow.python.ops import init_ops
 from tensorflow.python.ops import nn_ops
 
+
 class DCGRUCell(RNNCell):
     """Graph Convolution Gated Recurrent Unit cell.
     """
@@ -215,30 +216,36 @@ class DCIndCell(DCGRUCell):
             the arity and shapes of `state`
         """
         with tf.variable_scope(scope or "dcind_cell"):
-#            print('inputs',inputs.shape)
-#            print('state',state.shape)
+
+            #print('inputs',inputs.shape)
+            #print('state',state.shape)
 
             gate_inputs = self._gconv(inputs, state, self._num_units,
                                       bias_start=1.0, scope=scope)
-#            print('gate_inputs',gate_inputs.shape)
+            #print('gate_inputs',gate_inputs.shape)
+
 
             recurrent_kernel = tf.get_variable(
                 'recurrent_kernel', [state.shape[1].value], dtype=inputs.dtype,
                 initializer=init_ops.constant_initializer(1.))
-#            print('recurrent_kernel',recurrent_kernel.shape)
+
+            #print('recurrent_kernel',recurrent_kernel.shape)
             recurrent_update = state * recurrent_kernel  
-#            print('recurrent_update',recurrent_update.shape)
+            #print('recurrent_update',recurrent_update.shape)
                 
             gate_inputs = gate_inputs + recurrent_update
-#            print('gate_inputs',gate_inputs.shape)
+            #print('gate_inputs',gate_inputs.shape)
+
             
             bias = tf.get_variable(
                 'bias', [gate_inputs.shape[1].value], dtype=inputs.dtype,
                 initializer=init_ops.zeros_initializer(dtype=inputs.dtype)) 
             
-#            print('bias',bias.shape)
+
+            #print('bias',bias.shape)
             gate_inputs = nn_ops.bias_add(gate_inputs , bias)
-#            print('gate_inputs',gate_inputs.shape)
+            #print('gate_inputs',gate_inputs.shape)
+
             output = new_state = self._activation(gate_inputs)
 
             if self._num_proj is not None:
