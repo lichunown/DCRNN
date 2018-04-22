@@ -101,3 +101,7 @@ ENV/
 
 # pycharm
 .idea/
+data/results/
+data/model/*/
+data/model/*/*/
+data/model/*/*/*/
