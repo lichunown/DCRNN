@@ -11,6 +11,7 @@ from tensorflow.python.platform import tf_logging as logging
 
 from lib import dcrnn_utils
 from tensorflow.python.ops import init_ops
+from tensorflow.python.ops import nn_ops
 
 class DCGRUCell(RNNCell):
     """Graph Convolution Gated Recurrent Unit cell.
@@ -236,7 +237,7 @@ class DCIndCell(DCGRUCell):
                 initializer=init_ops.zeros_initializer(dtype=inputs.dtype)) 
             
 #            print('bias',bias.shape)
-            gate_inputs = gate_inputs + bias
+            gate_inputs = nn_ops.bias_add(gate_inputs , bias)
 #            print('gate_inputs',gate_inputs.shape)
             output = new_state = self._activation(gate_inputs)
 
